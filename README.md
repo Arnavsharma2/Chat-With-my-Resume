@@ -1,3 +1,3 @@
 # Chat-With-my-Resume
 
-push cold
+push cold cold
