@@ -1,28 +1,31 @@
-# Chat-With-my-Resume 🤖
+# 🤖 Resume Chatbot - AI-Powered Professional Assistant
 
-An intelligent resume chatbot built with **Retrieval-Augmented Generation (RAG)** technology using Google's Gemini API. This application allows users to have natural conversations about professional background, skills, and experience through an AI-powered interface that understands context and provides detailed responses.
+A sophisticated Resume Chatbot built with **Retrieval-Augmented Generation (RAG)** technology that allows recruiters and hiring managers to have natural conversations about a candidate's professional background, skills, and experience through an AI-powered interface.
 
 ## ✨ Features
 
-- **RAG Technology**: Uses retrieval-augmented generation for accurate, context-aware responses
-- **PDF Processing**: Automatically extracts and processes resume content from PDF files
-- **Smart Chunking**: Intelligently splits resume content into overlapping chunks for better retrieval
-- **Vector Embeddings**: Uses sentence transformers for semantic similarity search
-- **Gemini Integration**: Powered by Google's Gemini Pro model for natural language generation
-- **Terminal Interface**: Clean, colorful command-line interface for easy interaction
-- **Caching**: Automatically caches processed resume data for faster subsequent runs
+- **🧠 RAG Technology**: Advanced retrieval-augmented generation for contextually accurate responses
+- **📄 PDF Processing**: Automatic extraction and intelligent chunking of resume content
+- **🔍 Semantic Search**: Vector-based similarity search for relevant information retrieval
+- **💬 Natural Conversations**: Human-like interactions powered by OpenAI GPT-4
+- **🎨 Professional UI**: Modern, responsive interface built with Streamlit
+- **📊 Smart Analytics**: Resume statistics and source attribution
+- **💡 Suggested Questions**: Pre-built questions to help recruiters get started
+- **🔄 Real-time Processing**: Instant responses with context awareness
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Python 3.8 or higher
-- Google Gemini API key (get it from [Google AI Studio](https://makersuite.google.com/app/apikey))
+- OpenAI API key
+- Resume PDF file
 
 ### Installation
 
-1. **Clone or download this repository**
+1. **Clone or download the project**
    ```bash
+   git clone <repository-url>
    cd Chat-With-my-Resume
    ```
 
@@ -31,106 +34,204 @@ An intelligent resume chatbot built with **Retrieval-Augmented Generation (RAG)*
    pip install -r requirements.txt
    ```
 
-3. **Set up your Gemini API key**
+3. **Set up environment variables**
    ```bash
-   export GEMINI_API_KEY='your_gemini_api_key_here'
+   cp env_example.txt .env
    ```
-   
-   Or create a `.env` file in the project directory:
+   Edit `.env` and add your OpenAI API key:
    ```
-   GEMINI_API_KEY=your_gemini_api_key_here
+   OPENAI_API_KEY=your_openai_api_key_here
    ```
 
 4. **Place your resume PDF**
-   - Make sure your resume is named `resume.pdf` in the project directory
-   - Or modify the `resume_path` variable in `main.py`
+   - Ensure your resume PDF is named `resume.pdf` and placed in the project root directory
 
 5. **Run the application**
    ```bash
-   python main.py
+   streamlit run app.py
    ```
 
-## 💬 Usage
+6. **Open your browser**
+   - Navigate to `http://localhost:8501`
+   - The system will automatically process your resume and build the knowledge base
 
-Once the application starts, you can ask questions like:
+## 🏗️ Architecture
 
-- "What are my technical skills?"
-- "Tell me about my work experience"
-- "What projects have I worked on?"
-- "What is my educational background?"
-- "What programming languages do I know?"
-- "Describe my professional achievements"
+### Components
 
-Type `quit`, `exit`, or `bye` to end the conversation.
+1. **PDF Processor** (`pdf_processor.py`)
+   - Extracts text from PDF files
+   - Identifies resume sections (experience, education, skills, etc.)
+   - Chunks content for optimal vector storage
 
-## 🛠️ Technical Details
+2. **Vector Store** (`vector_store.py`)
+   - Generates embeddings using Sentence Transformers
+   - Implements FAISS for fast similarity search
+   - Handles vector storage and retrieval
 
-### Architecture
+3. **RAG Engine** (`rag_engine.py`)
+   - Orchestrates context retrieval and response generation
+   - Integrates with OpenAI GPT-4 for intelligent responses
+   - Manages conversation history and context
 
-- **PDF Processing**: Uses PyPDF2 for text extraction
-- **Text Chunking**: Splits resume into overlapping chunks for better retrieval
-- **Embeddings**: Uses sentence-transformers (all-MiniLM-L6-v2) for semantic embeddings
-- **Similarity Search**: Cosine similarity for finding relevant content
-- **LLM Integration**: Google Gemini Pro for generating responses
-- **Caching**: Pickle-based caching for processed resume data
+4. **Streamlit App** (`app.py`)
+   - Professional web interface
+   - Real-time chat functionality
+   - Interactive features and analytics
 
-### Dependencies
+### Technology Stack
 
-- `google-generativeai`: Gemini API integration
-- `PyPDF2`: PDF text extraction
-- `sentence-transformers`: Text embeddings
-- `scikit-learn`: Similarity calculations
-- `python-dotenv`: Environment variable management
-- `colorama`: Terminal colors
-- `numpy`: Numerical operations
+- **Backend**: Python 3.8+
+- **AI/ML**: OpenAI GPT-4, Sentence Transformers, FAISS
+- **PDF Processing**: PyPDF2
+- **Web Framework**: Streamlit
+- **Vector Database**: FAISS (Facebook AI Similarity Search)
+- **Embeddings**: all-MiniLM-L6-v2
 
-## 📁 Project Structure
+## 💡 Usage Examples
 
-```
-Chat-With-my-Resume/
-├── main.py              # Main application file
-├── requirements.txt     # Python dependencies
-├── resume.pdf          # Your resume (place your PDF here)
-├── resume_cache.pkl    # Cached processed data (auto-generated)
-└── README.md           # This file
-```
+### For Recruiters
+
+**Technical Skills Questions:**
+- "What programming languages does this candidate know?"
+- "Tell me about their machine learning experience"
+- "What frameworks and tools have they used?"
+
+**Experience Questions:**
+- "Describe their most significant professional achievements"
+- "What leadership roles have they held?"
+- "Tell me about their project experience"
+
+**Background Questions:**
+- "What is their educational background?"
+- "What certifications do they have?"
+- "Tell me about their career progression"
+
+### Sample Interactions
+
+**Q: "What are this candidate's strongest technical skills?"**
+
+**A:** Based on the resume, this candidate demonstrates exceptional technical proficiency across multiple domains:
+
+**Programming Languages:**
+- Python (Advanced) - Extensive experience with data science, machine learning, and web development
+- JavaScript/TypeScript - Full-stack development capabilities
+- SQL - Database design and optimization expertise
+- R - Statistical analysis and data visualization
+
+**Machine Learning & AI:**
+- Deep learning frameworks (TensorFlow, PyTorch)
+- Natural Language Processing (NLP) and text analysis
+- Computer Vision and image processing
+- Predictive modeling and statistical analysis
+
+**Data Engineering:**
+- ETL pipeline development
+- Data warehousing and architecture
+- Cloud platforms (AWS, Azure)
+- Big data technologies (Spark, Hadoop)
+
+**Web Development:**
+- Full-stack development (React, Node.js, Express)
+- RESTful API design and implementation
+- Database management (PostgreSQL, MongoDB)
+- DevOps and deployment automation
+
+This candidate's technical foundation is particularly strong in AI/ML applications, with demonstrated ability to build end-to-end solutions from data collection to model deployment.
 
 ## 🔧 Configuration
 
-You can modify these settings in `main.py`:
+### Environment Variables
 
-- `chunk_size`: Size of text chunks (default: 1000 words)
-- `chunk_overlap`: Overlap between chunks (default: 200 words)
-- `top_k`: Number of relevant chunks to retrieve (default: 3)
+- `OPENAI_API_KEY`: Your OpenAI API key (required)
 
-## 🐛 Troubleshooting
+### Customization Options
+
+1. **Embedding Model**: Change the model in `vector_store.py`
+   ```python
+   vector_store = VectorStore(model_name="your-preferred-model")
+   ```
+
+2. **Chunk Size**: Adjust in `pdf_processor.py`
+   ```python
+   chunks = processor.chunk_content(max_chunk_size=500)
+   ```
+
+3. **Search Results**: Modify in `rag_engine.py`
+   ```python
+   search_results = self.retrieve_context(query, top_k=5)
+   ```
+
+## 📊 Performance Features
+
+- **Intelligent Caching**: System components are cached for faster subsequent loads
+- **Efficient Search**: FAISS provides sub-second similarity search
+- **Context Awareness**: Maintains conversation history for better responses
+- **Source Attribution**: Shows which parts of the resume informed each response
+
+## 🛠️ Troubleshooting
 
 ### Common Issues
 
-1. **API Key Error**
-   - Make sure your Gemini API key is correctly set
-   - Check that the API key has proper permissions
+1. **"Please set your OPENAI_API_KEY"**
+   - Ensure your `.env` file contains a valid OpenAI API key
+   - Check that the `.env` file is in the project root directory
 
-2. **PDF Not Found**
-   - Ensure `resume.pdf` exists in the project directory
-   - Check file permissions
+2. **"Error extracting text from PDF"**
+   - Verify that `resume.pdf` exists in the project root
+   - Ensure the PDF is not password-protected
+   - Check that the PDF contains extractable text (not just images)
 
-3. **Import Errors**
-   - Run `pip install -r requirements.txt` to install all dependencies
-   - Make sure you're using Python 3.8+
+3. **"Error loading embedding model"**
+   - Ensure you have an internet connection for the first run
+   - The model will be downloaded automatically
 
-4. **Memory Issues**
-   - For very large resumes, consider reducing `chunk_size`
-   - The application caches data, so subsequent runs will be faster
+4. **Slow performance**
+   - The first run takes longer as it processes the resume and builds the vector index
+   - Subsequent runs will be much faster due to caching
 
-## 📝 License
+### Getting Help
+
+If you encounter issues:
+1. Check the console output for detailed error messages
+2. Ensure all dependencies are installed correctly
+3. Verify your OpenAI API key is valid and has sufficient credits
+4. Make sure your resume PDF is accessible and readable
+
+## 🎯 Best Practices
+
+### For Optimal Results
+
+1. **Resume Quality**: Ensure your PDF resume has clear, well-structured content
+2. **Specific Questions**: Ask detailed questions for more comprehensive answers
+3. **Follow-up Questions**: Use the conversation history to ask follow-up questions
+4. **Source Verification**: Check the source attribution to understand response accuracy
+
+### Question Tips
+
+- **Be Specific**: "Tell me about their Python experience" vs "What do they know?"
+- **Ask for Examples**: "Give me specific examples of their leadership experience"
+- **Request Details**: "What technologies did they use in their projects?"
+- **Compare Skills**: "How does their experience compare to typical candidates?"
+
+## 🔮 Future Enhancements
+
+- [ ] Multi-resume comparison capabilities
+- [ ] Interview question generation
+- [ ] Skills gap analysis
+- [ ] Resume optimization suggestions
+- [ ] Integration with ATS systems
+- [ ] Voice interaction support
+- [ ] Mobile-responsive design improvements
+
+## 📄 License
 
 This project is open source and available under the MIT License.
 
 ## 🤝 Contributing
 
-Feel free to submit issues, feature requests, or pull requests to improve this application!
+Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
 
 ---
 
-**Happy Chatting! 🎉**
+**Built with ❤️ using RAG technology to revolutionize resume interactions for recruiters and candidates alike.**
