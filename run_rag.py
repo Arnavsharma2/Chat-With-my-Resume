@@ -1,23 +1,20 @@
 #!/usr/bin/env python3
 """
-Resume Chatbot Launcher
-Quick start script for the resume chatbot application
+RAG Resume Chatbot Launcher
+Launcher for the RAG-powered version
 """
 
 import subprocess
 import sys
 import os
-from pathlib import Path
-
 
 def check_requirements():
-    """Check if all requirements are met"""
-    print("🔍 Checking requirements...")
+    """Check if RAG requirements are met"""
+    print("🔍 Checking RAG requirements...")
     
     # Check if .env file exists
     if not os.path.exists('.env'):
         print("❌ .env file not found!")
-        print("   Please copy env_example.txt to .env and add your OpenAI API key")
         return False
     
     # Check if resume.pdf exists
@@ -28,43 +25,46 @@ def check_requirements():
     
     # Check if requirements are installed
     try:
-        import streamlit
         import openai
         import PyPDF2
         import sentence_transformers
         import faiss
-        print("✅ All requirements satisfied!")
+        import numpy
+        print("✅ All RAG requirements satisfied!")
         return True
     except ImportError as e:
         print(f"❌ Missing requirement: {e}")
-        print("   Please run: pip install -r requirements.txt")
-        return False
-
+        print("   Installing RAG requirements...")
+        try:
+            subprocess.run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"], check=True)
+            print("✅ Requirements installed successfully!")
+            return True
+        except subprocess.CalledProcessError:
+            print("❌ Failed to install requirements")
+            return False
 
 def main():
     """Main launcher function"""
-    print("🤖 Resume Chatbot Launcher")
-    print("=" * 40)
+    print("🤖 RAG Resume Chatbot - Smart AI Assistant")
+    print("=" * 50)
     
     if not check_requirements():
-        print("\n❌ Requirements not met. Please fix the issues above.")
+        print("\n❌ Setup incomplete. Please fix the issues above.")
         return
     
-    print("\n🚀 Starting Resume Chatbot...")
-    print("   The application will open in your default browser")
-    print("   Press Ctrl+C to stop the application")
-    print("-" * 40)
+    print("\n🚀 Starting RAG Resume Chatbot...")
+    print("   This version uses semantic search for smarter responses!")
+    print("-" * 50)
     
     try:
-        # Run streamlit app
-        subprocess.run([sys.executable, "-m", "streamlit", "run", "app.py"], check=True)
+        # Run the RAG chatbot
+        subprocess.run([sys.executable, "rag_chatbot.py"], check=True)
     except KeyboardInterrupt:
         print("\n👋 Application stopped by user")
     except subprocess.CalledProcessError as e:
         print(f"\n❌ Error starting application: {e}")
     except Exception as e:
         print(f"\n❌ Unexpected error: {e}")
-
 
 if __name__ == "__main__":
     main()

@@ -1,17 +1,15 @@
 # 🤖 Resume Chatbot - AI-Powered Professional Assistant
 
-A sophisticated Resume Chatbot built with **Retrieval-Augmented Generation (RAG)** technology that allows recruiters and hiring managers to have natural conversations about a candidate's professional background, skills, and experience through an AI-powered interface.
+A simple and effective Resume Chatbot that allows recruiters to have natural conversations with Arnav Sharma about his professional background, skills, and experience through a terminal-based AI interface.
 
 ## ✨ Features
 
-- **🧠 RAG Technology**: Advanced retrieval-augmented generation for contextually accurate responses
-- **📄 PDF Processing**: Automatic extraction and intelligent chunking of resume content
-- **🔍 Semantic Search**: Vector-based similarity search for relevant information retrieval
-- **💬 Natural Conversations**: Human-like interactions powered by OpenAI GPT-4
-- **🎨 Professional UI**: Modern, responsive interface built with Streamlit
-- **📊 Smart Analytics**: Resume statistics and source attribution
+- **💬 Natural Conversations**: Arnav speaks directly to recruiters in first person
+- **📄 PDF Processing**: Automatic extraction of resume content
+- **🤖 AI-Powered**: Uses OpenAI GPT-4o-mini for fast, cost-effective responses
+- **💻 Terminal Interface**: Clean command-line interface
+- **🎯 Concise Responses**: 2-3 line responses that sound natural and engaging
 - **💡 Suggested Questions**: Pre-built questions to help recruiters get started
-- **🔄 Real-time Processing**: Instant responses with context awareness
 
 ## 🚀 Quick Start
 
@@ -23,37 +21,24 @@ A sophisticated Resume Chatbot built with **Retrieval-Augmented Generation (RAG)
 
 ### Installation
 
-1. **Clone or download the project**
-   ```bash
-   git clone <repository-url>
-   cd Chat-With-my-Resume
-   ```
-
-2. **Install dependencies**
+1. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Set up environment variables**
-   ```bash
-   cp env_example.txt .env
-   ```
-   Edit `.env` and add your OpenAI API key:
+2. **Set up environment variables**
+   - Edit `.env` and add your OpenAI API key:
    ```
    OPENAI_API_KEY=your_openai_api_key_here
    ```
 
-4. **Place your resume PDF**
+3. **Place your resume PDF**
    - Ensure your resume PDF is named `resume.pdf` and placed in the project root directory
 
-5. **Run the application**
+4. **Run the chatbot**
    ```bash
-   streamlit run app.py
+   python terminal_chatbot.py
    ```
-
-6. **Open your browser**
-   - Navigate to `http://localhost:8501`
-   - The system will automatically process your resume and build the knowledge base
 
 ## 🏗️ Architecture
 
