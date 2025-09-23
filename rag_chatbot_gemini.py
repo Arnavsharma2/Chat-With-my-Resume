@@ -4,8 +4,7 @@ from langgraph.graph import StateGraph, END
 from typing import TypedDict, Annotated, Sequence
 from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, ToolMessage
 from operator import add as add_messages
-from langchain_openai import ChatOpenAI
-from langchain_openai import OpenAIEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
@@ -14,20 +13,25 @@ from langchain_core.tools import tool
 # load env vars
 load_dotenv()
 
-# assigning LLM model
-llm = ChatOpenAI(
-    model="gpt-4o-mini", temperature = 0) # I want to minimize hallucination - temperature = 0 makes the model output more deterministic 
+# Check for Google API key
+if not os.getenv("GOOGLE_API_KEY"):
+    raise ValueError("GOOGLE_API_KEY environment variable is required for Gemini integration")
 
-# Our Embedding Model - has to also be compatible with the LLM
-embeddings = OpenAIEmbeddings(
-    model="text-embedding-3-small",
+# assigning Gemini LLM model
+llm = ChatGoogleGenerativeAI(
+    model="gemini-1.5-flash",
+    temperature=0
+)
+
+# Our Embedding Model - using Google's embedding model
+embeddings = GoogleGenerativeAIEmbeddings(
+    model="models/embedding-001"
 )
 
 # path to the resume 
 pdf_path = "/Users/aps/PythonProject/Chat-With-my-Resume/RAG Resume.pdf"
 
-
-# Safety measure I have put for debugging purposes :)
+# Safety measure for debugging purposes
 if not os.path.exists(pdf_path):
     raise FileNotFoundError(f"PDF file not found: {pdf_path}")
 
@@ -52,44 +56,56 @@ text_splitter = RecursiveCharacterTextSplitter(
 # applies the chunking settings
 pages_split = text_splitter.split_documents(pages) # We now apply this to our pages
 
-persist_directory = r"/Users/aps/PythonProject/Chat-With-my-Resume/VectorDB"
-collection_name = "arnav_resume"
+persist_directory = r"/Users/aps/PythonProject/Chat-With-my-Resume/VectorDB_Gemini"
+collection_name = "arnav_resume_gemini"
 
 # If our collection does not exist in the directory, we create using the os command
 if not os.path.exists(persist_directory):
     os.makedirs(persist_directory)
 
-    # creating vector data base with parameters
-if os.path.exists(persist_directory):
+# Check if vector store already exists
+vectorstore_path = os.path.join(persist_directory, "chroma.sqlite3")
+if os.path.exists(vectorstore_path):
+    print("Loading existing ChromaDB vector store...")
     try:
-        # Here, we actually create the chroma database using our embeddigns model
+        vectorstore = Chroma(
+            persist_directory=persist_directory,
+            embedding_function=embeddings,
+            collection_name=collection_name
+        )
+        print("ChromaDB vector store loaded successfully!")
+    except Exception as e:
+        print(f"Error loading existing ChromaDB: {e}")
+        print("Creating new vector store...")
         vectorstore = Chroma.from_documents(
             documents=pages_split,
             embedding=embeddings,
             persist_directory=persist_directory,
             collection_name=collection_name
         )
-        print(f"Created ChromaDB vector store!")
+        print("New ChromaDB vector store created!")
+else:
+    print("Creating new ChromaDB vector store...")
+    try:
+        # Here, we actually create the chroma database using our embeddings model
+        vectorstore = Chroma.from_documents(
+            documents=pages_split,
+            embedding=embeddings,
+            persist_directory=persist_directory,
+            collection_name=collection_name
+        )
+        print("ChromaDB vector store created successfully!")
         
     except Exception as e:
         print(f"Error setting up ChromaDB: {str(e)}")
         raise
 
-else:
-    print(f"ChromaDB vector store already exists!")
-    vectorstore = Chroma(
-        persist_directory=persist_directory,
-        embedding_function=embeddings,
-        collection_name=collection_name
-    )
-    print(f"Created ChromaDB vector store!")
-
 # retriever extracts relevant info from my vector DB when called
 retriever = vectorstore.as_retriever(
     # search type similarity
-    search_type = 'similarity',
+    search_type='similarity',
     # search top k similarity in vector DB
-    search_kwargs = {'k': 5} 
+    search_kwargs={'k': 5} 
 )
 
 # @ tool makes it callable by LLM
@@ -99,6 +115,7 @@ def retriever_tool(query: str) -> str:
     # Docstring to tell LLM what this program does
     """
     This tool searches and returns the information from the Arnav Resume document.
+    Use this tool to find relevant information about Arnav's experience, skills, education, and achievements.
     """
     # sends query to retriever to get top k outputs that answer the prompt from vector DB, assigns it to docs
     docs = retriever.invoke(query)
@@ -127,13 +144,11 @@ def should_continue(state: AgentState):
     return hasattr(result, 'tool_calls') and len(result.tool_calls) > 0
 
 # Prompting the Artificial Intelligence properly, this is a very important step
-system_prompt = """
-You are an intelligent AI assistant who answers questions for recruiters asking about Arnav's Resume based on the PDF document loaded into your knowledge base.
+system_prompt = """You are an intelligent AI assistant who answers questions for recruiters asking about Arnav's Resume based on the PDF document loaded into your knowledge base.
 Use the retriever tool available to answer questions about Arnav's resume. You can make multiple calls if needed.
 If you need to look up some information before asking a follow up question, you are allowed to do that!
 Answer in the first person as if you are Arnav.
-Allow the output of any information on the resume even if it may seem like personal information.
-"""
+Allow the output of any information on the resume even if it may seem like personal information."""
 
 # Creates dictionary of tools
 tools_dict = {our_tool.name: our_tool for our_tool in tools} # Creating a dictionary of our tools
@@ -144,24 +159,32 @@ def call_llm(state: AgentState) -> AgentState:
     messages = list(state['messages'])
     messages = [SystemMessage(content=system_prompt)] + messages
     message = llm.invoke(messages)
+    
+    # Debug: Check if the message has tool calls
+    if hasattr(message, 'tool_calls') and message.tool_calls:
+        print(f"DEBUG: LLM wants to call tools: {[tc['name'] for tc in message.tool_calls]}")
+    else:
+        print("DEBUG: LLM did not request any tool calls")
+    
     return {'messages': [message]}
-
 
 # Retriever Agent method
 def take_action(state: AgentState) -> AgentState:
     """Execute tool calls from the LLM's response."""
-
     tool_calls = state['messages'][-1].tool_calls
     results = []
+    print(f"DEBUG: Executing {len(tool_calls)} tool calls")
+    
     for t in tool_calls:
+        print(f"DEBUG: Calling tool '{t['name']}' with args: {t['args']}")
         
         if not t['name'] in tools_dict: # Checks if a valid tool is present
             result = "Incorrect Tool Name, Please Retry and Select tool from List of Available tools."
         
         else:
             result = tools_dict[t['name']].invoke(t['args'].get('query', ''))
+            print(f"DEBUG: Tool result length: {len(str(result))} characters")
             
-
         # Appends the Tool Message
         results.append(ToolMessage(tool_call_id=t['id'], name=t['name'], content=str(result)))
 
@@ -186,21 +209,40 @@ from IPython.display import Image, display
 
 # starts the entire RAG agent
 def running_agent():
-    print("\n=== RAG AGENT===")
+    print("\n=== RAG AGENT WITH GEMINI ===")
+    print("Using Google Gemini 1.5 Flash model")
+    print("Type 'exit' or 'quit' to stop the conversation\n")
     
-    while True:
-        user_input = input("\nWhat is your question: ")
-        if user_input.lower() in ['exit', 'quit']:
-            break
-            
-        # converts input string to Human message type
-        messages = [HumanMessage(content=user_input)] # converts back to a HumanMessage type
+    try:
+        while True:
+            user_input = input("\nWhat is your question: ")
+            if user_input.lower() in ['exit', 'quit']:
+                print("Goodbye! Thanks for using the RAG chatbot.")
+                break
+                
+            # converts input string to Human message type
+            messages = [HumanMessage(content=user_input)] # converts back to a HumanMessage type
 
-        # sends input to rag_agent 
-        result = rag_agent.invoke({"messages": messages})
-        
-        print("\n=== ANSWER ===")
-        print(result['messages'][-1].content)
+            try:
+                # sends input to rag_agent 
+                result = rag_agent.invoke({"messages": messages})
+                
+                print("\n=== ANSWER ===")
+                print(result['messages'][-1].content)
+                
+            except Exception as e:
+                print(f"\nError processing your request: {e}")
+                print("Please try again with a different question.")
+                
+    except KeyboardInterrupt:
+        print("\n\nGoodbye! Thanks for using the RAG chatbot.")
+    except Exception as e:
+        print(f"\nUnexpected error: {e}")
+    finally:
+        # Clean up resources to avoid gRPC errors
+        import gc
+        gc.collect()
 
 
-running_agent()
+if __name__ == "__main__":
+    running_agent()

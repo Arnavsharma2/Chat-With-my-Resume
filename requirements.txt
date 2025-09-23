@@ -3,7 +3,9 @@ langchain
 ipython
 langchain_openai
 langchain_community
+langchain-google-genai
 python-dotenv
 typing
 chromadb==1.0.20
 langchain_chroma
+google-generativeai
