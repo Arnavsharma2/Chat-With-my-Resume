@@ -9,3 +9,4 @@ typing
 chromadb==1.0.20
 langchain_chroma
 google-generativeai
+langchain_huggingface
